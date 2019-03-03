@@ -1,5 +1,40 @@
 'use strict';
 
+// Список фильтров
+const filterNameList = [
+  `all`,
+  `overdue`,
+  `today`,
+  `favorites`,
+  `repeating`,
+  `tags`,
+  `archive`
+];
+
+// Список типов карточек
+const cardTypeList = [
+  ``,
+  `card--edit`
+];
+
+// Список типов баров у карточек
+const cardBarTypeList = [
+  ``,
+  `card--repeat`
+];
+
+// Список цветов баров у карточек
+const cardColorList = [
+  `card--pink`,
+  `card--blue`,
+  `card--black`,
+  `card--yellow`,
+  `card--deadline`
+];
+
+const mainFilterElem = document.querySelector(`.main__filter`);
+const boardTasksElem = document.querySelector(`.board__tasks`);
+
 /**
  * Генерации целого случайного числа из заданного диапазона
  * @param {int} minValue
@@ -18,14 +53,12 @@ const getRandomValueRange = (minValue, maxValue) => {
  */
 const createFilterItem = (filterName, tasksCount) => {
   const disabledText = tasksCount === 0 ? `disabled` : ``;
-  const filterHtml = `
+  return `
     <input type="radio" id="filter__${filterName}" class="filter__input visually-hidden" name="filter" ${disabledText}/>
     <label for="filter__${filterName}" class="filter__label">
       ${filterName.toUpperCase()} <span class="filter__${filterName}-count">${tasksCount}</span>
     </label>
   `;
-
-  return filterHtml;
 };
 
 /**
@@ -187,7 +220,7 @@ const createCardItem = (cardSettings) => {
     </div>
   `;
 
-  const cardHtml = `
+  return `
     <article class="card ${cardSettings.cardType} ${cardSettings.barType} ${cardSettings.color}">
       <form class="card__form" method="get">
         <div class="card__inner">
@@ -200,20 +233,16 @@ const createCardItem = (cardSettings) => {
       </form>
     </article>
   `;
-
-  return cardHtml;
 };
 
 /**
  * Создание заданного перечня фильтров
- * @param {array} filterNameList
+ * @param {array} filterList
  */
-const generateFilters = (filterNameList) => {
-  let filtersHtml = ``;
-  filterNameList.forEach((filterNameItem) => {
-    filtersHtml += createFilterItem(filterNameItem, getRandomValueRange(0, 115));
-  });
-  mainFilterElem.innerHTML = filtersHtml;
+const generateFilters = (filterList) => {
+  mainFilterElem.innerHTML = filterList.reduce((resultHtml, filterNameItem) => {
+    return resultHtml + createFilterItem(filterNameItem, getRandomValueRange(0, 115));
+  }, ``);
 };
 
 /**
@@ -243,41 +272,6 @@ const addFiltersEvents = () => {
     generateCards(getRandomValueRange(0, 7));
   });
 };
-
-// Список фильтров
-const filterNameList = [
-  `all`,
-  `overdue`,
-  `today`,
-  `favorites`,
-  `repeating`,
-  `tags`,
-  `archive`
-];
-
-// Список типов карточек
-const cardTypeList = [
-  ``,
-  `card--edit`
-];
-
-// Список типов баров у карточек
-const cardBarTypeList = [
-  ``,
-  `card--repeat`
-];
-
-// Список цветов баров у карточек
-const cardColorList = [
-  `card--pink`,
-  `card--blue`,
-  `card--black`,
-  `card--yellow`,
-  `card--deadline`
-];
-
-const mainFilterElem = document.querySelector(`.main__filter`);
-const boardTasksElem = document.querySelector(`.board__tasks`);
 
 // Отрисовываем фильтры
 generateFilters(filterNameList);
