@@ -1,7 +1,15 @@
-import {getRandomValueRange} from '../src/utils.js';
-import {FILTER_NAME_LIST, CARD_TYPE_LIST, CARD_BAR_TYPE_LIST, CARD_COLOR_LIST} from '../src/data.js';
 import createFilterItem from '../src/create-filter.js';
-import createCardItem from '../src/create-card.js';
+import createTaskItem from './create-task.js';
+import {
+  FILTER_NAME_LIST,
+  TASK_TITLE_LIST,
+  TASK_COLOR_LIST,
+  TASK_TYPE_LIST,
+  getDueDate,
+  getTags,
+  getRepeatingDays
+} from '../src/data.js';
+import {getRandomValueRange} from '../src/utils.js';
 
 const mainFilterElem = document.querySelector(`.main__filter`);
 const boardTasksElem = document.querySelector(`.board__tasks`);
@@ -18,18 +26,27 @@ const generateFilters = (filterList) => {
 
 /**
  * Создание заданного числа карточеек
- * @param {int} cardsNumber
+ * @param {int} taskCount
  */
-const generateCards = (cardsNumber) => {
-  let cardsHtml = ``;
-  for (let i = 1; i <= cardsNumber; i++) {
-    cardsHtml += createCardItem({
-      cardType: CARD_TYPE_LIST[getRandomValueRange(0, CARD_TYPE_LIST.length - 1)],
-      barType: CARD_BAR_TYPE_LIST[getRandomValueRange(0, CARD_BAR_TYPE_LIST.length - 1)],
-      color: CARD_COLOR_LIST[getRandomValueRange(0, CARD_COLOR_LIST.length - 1)]
+const generateTasks = (taskCount) => {
+  let tastsHtml = ``;
+  for (let i = 1; i <= taskCount; i++) {
+    tastsHtml += createTaskItem({
+      title: TASK_TITLE_LIST[getRandomValueRange(0, TASK_TITLE_LIST.length - 1)],
+      dueDate: getDueDate(),
+      tags: getTags(),
+      image: `http://picsum.photos/100/100?r=${Math.random()}`,
+      color: {
+        value: TASK_COLOR_LIST[getRandomValueRange(0, TASK_COLOR_LIST.length - 1)],
+        list: TASK_COLOR_LIST
+      },
+      repeatingDays: getRepeatingDays(),
+      isFavorite: !!getRandomValueRange(0, 1),
+      isDone: !!getRandomValueRange(0, 1),
+      taskType: TASK_TYPE_LIST[1]
     });
   }
-  boardTasksElem.innerHTML = cardsHtml;
+  boardTasksElem.innerHTML = tastsHtml;
 };
 
 /**
@@ -38,7 +55,7 @@ const generateCards = (cardsNumber) => {
 const addFiltersEvents = () => {
   mainFilterElem.addEventListener(`click`, () => {
     boardTasksElem.innerHTML = ``;
-    generateCards(getRandomValueRange(0, 7));
+    generateTasks(getRandomValueRange(0, 7));
   });
 };
 
@@ -46,7 +63,7 @@ const addFiltersEvents = () => {
 generateFilters(FILTER_NAME_LIST);
 
 // Отрисовываем карточки
-generateCards(7);
+generateTasks(7);
 
 // Добавляем обработчики событий фильтрам
 addFiltersEvents();
