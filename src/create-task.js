@@ -133,7 +133,7 @@ const generateTaskColorsHtml = (colorObj) => {
  * @param {object} taskSettings
  * @return {string}
  */
-export default (taskSettings) => {
+const createTaskItem = (taskSettings) => {
   const taskControlBlock = `
     <div class="card__control">
       <button type="button" class="card__btn card__btn--edit">
@@ -239,4 +239,8 @@ export default (taskSettings) => {
       </form>
     </article>
   `;
+};
+
+export {
+  createTaskItem
 };
