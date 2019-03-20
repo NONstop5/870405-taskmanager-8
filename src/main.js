@@ -8,6 +8,7 @@ import {
   getRepeatingDays
 } from '../src/data.js';
 import {Task} from '../src/task.js';
+import {TaskEdit} from '../src/task-edit.js';
 import {getRandomValueRange} from '../src/utils.js';
 
 const mainFilterElem = document.querySelector(`.main__filter`);
@@ -39,6 +40,7 @@ const addFiltersEvents = () => {
  * @param {int} taskCount
  */
 const generateTasks = (containerTasksElem, taskCount) => {
+  containerTasksElem.innerHTML = ``;
   for (let i = 1; i <= taskCount; i++) {
     const taskObj = {
       title: TASK_TITLE_LIST[getRandomValueRange(0, TASK_TITLE_LIST.length - 1)],
@@ -52,20 +54,32 @@ const generateTasks = (containerTasksElem, taskCount) => {
       repeatingDays: getRepeatingDays(),
       isFavorite: !!getRandomValueRange(0, 1),
       isDone: !!getRandomValueRange(0, 1),
-      isEdit: !!getRandomValueRange(0, 1)
     };
 
-    const task = new Task(taskObj);
-    task.render(containerTasksElem);
+    const taskComponent = new Task(taskObj);
+    const taskEditComponent = new TaskEdit(taskObj);
+
+    containerTasksElem.appendChild(taskComponent.render());
+
+    taskComponent.onEdit = () => {
+      taskEditComponent.render();
+      containerTasksElem.replaceChild(taskEditComponent.element, taskComponent.element);
+      taskComponent.unrender();
+    };
+
+    taskEditComponent.onSubmit = () => {
+      taskComponent.render();
+      containerTasksElem.replaceChild(taskComponent.element, taskEditComponent.element);
+      taskEditComponent.unrender();
+    };
   }
 };
 
 // Отрисовываем фильтры
 generateFilters(FILTER_NAME_LIST);
 
-// Отрисовываем карточек задач
-boardTasksElem.innerHTML = ``;
-generateTasks(boardTasksElem, 7);
-
 // Добавляем обработчики событий фильтрам
 addFiltersEvents();
+
+// Отрисовываем карточек задач
+generateTasks(boardTasksElem, 7);

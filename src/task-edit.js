@@ -1,4 +1,4 @@
-class Task {
+class TaskEdit {
   constructor(data) {
     this._title = data.title;
     this._dueDate = data.dueDate;
@@ -13,7 +13,7 @@ class Task {
       isDone: data.isDone,
     };
 
-    this._onEdit = null;
+    this._onSubmit = null;
   }
 
   /**
@@ -25,8 +25,12 @@ class Task {
     const tagsHtml = tags.reduce((resultHtml, tagValue) => {
       return resultHtml + `
       <span class="card__hashtag-inner">
+        <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input" />
         <button type="button" class="card__hashtag-name">
           #${tagValue}
+        </button>
+        <button type="button" class="card__hashtag-delete">
+          delete
         </button>
       </span>
     `;
@@ -37,6 +41,10 @@ class Task {
       <div class="card__hashtag-list">
         ${tagsHtml}
       </div>
+
+      <label>
+        <input type="text" class="card__hashtag-input" name="hashtag-input" placeholder="Type new hashtag here" />
+      </label>
     </div>
   `;
   }
@@ -57,7 +65,7 @@ class Task {
 
   /**
    * Возвращает является ли задача просроченной
-   * @param {string} dueDateStr
+   * @param {*} dueDateStr
    * @return {boolean}
    */
   _getIsDeadline(dueDateStr) {
@@ -102,13 +110,55 @@ class Task {
   }
 
   /**
+   * Возвращает повторяется задача или нет в виде текста
+   * @param {boolean} isRepeat
+   * @return {string}
+   */
+  _getTaskRepeatText(isRepeat) {
+    return isRepeat ? `yes` : `no`;
+  }
+
+  /**
+   * Генерация html-кода дней недели
+   * @param {object} repeatingDays
+   * @return {string}
+   */
+  _generateTaskDaysHtml(repeatingDays) {
+    let daysHtml = ``;
+    for (let day in repeatingDays) {
+      if (repeatingDays[day] !== undefined) {
+        daysHtml += `
+        <input class="visually-hidden card__repeat-day-input" type="checkbox" id="repeat-${day}-4" name="repeat" value="${day}" ${repeatingDays[day] ? `checked` : ``} />
+        <label class="card__repeat-day" for="repeat-${day}-4">${day}</label>
+      `;
+      }
+    }
+
+    return daysHtml;
+  }
+
+  /**
+   * Генерация html - кода цветов
+   * @param {object} colorObj
+   * @return {string}
+   */
+  _generateTaskColorsHtml(colorObj) {
+    return colorObj.list.reduce((resultHtml, color) => {
+      return resultHtml + `
+      <input type="radio" id="color-${color}-4" class="card__color-input card__color-input--${color} visually-hidden" name="color" value="${color}" ${color === colorObj.value ? `checked` : ``} />
+      <label for="color-${color}-4" class="card__color card__color--${color}">${color}</label>
+    `;
+    }, ``);
+  }
+
+  /**
    * Отрисовка карточки задачи
    * @return {string}
    */
-  get taskTemplate() {
+  get taskEditTemplate() {
     const taskControlBlock = `
     <div class="card__control">
-      <button type="button" class="card__btn card__btn--edit">
+      <button type="button" class="card__btn card__btn--edit card__btn--disabled">
         edit
       </button>
       <button type="button" class="card__btn card__btn--archive${this._getTaskDisabledClass(this._state.isDone)}">
@@ -138,6 +188,10 @@ class Task {
 
     const taskDateBlock = `
     <div class="card__dates">
+      <button class="card__date-deadline-toggle" type="button">
+        date: <span class="card__date-status">yes</span>
+      </button>
+
       <fieldset class="card__date-deadline">
         <label class="card__input-deadline-wrap">
           <input class="card__date" type="text" placeholder="23 September" name="date" value="${this._dueDate}" />
@@ -145,6 +199,16 @@ class Task {
         <label class="card__input-deadline-wrap">
           <input class="card__time" type="text" placeholder="11:15 PM" name="time" value="00:00 AM" />
         </label>
+      </fieldset>
+
+      <button class="card__repeat-toggle" type="button">
+        repeat:<span class="card__repeat-status">${this._getTaskRepeatText(this._getIsRepeatTask(this._repeatingDays))}</span>
+      </button>
+
+      <fieldset class="card__repeat-days">
+        <div class="card__repeat-days-inner">
+          ${this._generateTaskDaysHtml(this._repeatingDays)}
+        </div>
       </fieldset>
     </div>
   `;
@@ -156,6 +220,15 @@ class Task {
     </label>
   `;
 
+    const taskColorBlock = `
+    <div class="card__colors-inner">
+      <h3 class="card__colors-title">Color</h3>
+      <div class="card__colors-wrap">
+        ${this._generateTaskColorsHtml(this._color)}
+      </div>
+    </div>
+  `;
+
     const taskSettingsBlock = `
     <div class="card__settings">
       <div class="card__details">
@@ -163,27 +236,36 @@ class Task {
         ${this._generateTaskHashtags(this._tags)}
       </div>
       ${taskImageBlock}
+      ${taskColorBlock}
     </div>
 
   `;
 
+    const taskStatusButtonsBlock = `
+    <div class="card__status-btns">
+      <button class="card__save" type="submit">save</button>
+      <button class="card__delete" type="button">delete</button>
+    </div>
+  `;
+
     return `
-    <article class="card ${this._getTaskBarType(this._getIsRepeatTask(this._repeatingDays))} card--${this._getTaskColor(this._color.value, this._getIsDeadline(this._dueDate))}">
+    <article class="card card--edit ${this._getTaskBarType(this._getIsRepeatTask(this._repeatingDays))} card--${this._getTaskColor(this._color.value, this._getIsDeadline(this._dueDate))}">
       <form class="card__form" method="get">
         <div class="card__inner">
         ${taskControlBlock}
         ${taskColorBarBlock}
         ${taskTextareaBlock}
         ${taskSettingsBlock}
+        ${taskStatusButtonsBlock}
         </div>
       </form>
     </article>
   `;
   }
 
-  _onEditButtonClick() {
-    if (typeof this._onEdit === `function`) {
-      this._onEdit();
+  _onSubmitButtonClick() {
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit();
     }
   }
 
@@ -191,21 +273,21 @@ class Task {
     return this._element;
   }
 
-  set onEdit(fn) {
-    this._onEdit = fn;
+  set onSubmit(fn) {
+    this._onSubmit = fn;
   }
 
   /**
    * Создаем обработчики событий
    */
   addEvents() {
-    const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.addEventListener(`click`, this._onEditButtonClick.bind(this));
+    const cardBtnSubmitElem = this._element.querySelector(`.card__save`);
+    cardBtnSubmitElem.addEventListener(`click`, this._onSubmitButtonClick.bind(this));
   }
 
   removeEvents() {
-    const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.removeEventListener(`click`, this._onEditButtonClick.bind(this));
+    const cardBtnSubmitElem = this._element.querySelector(`.card__save`);
+    cardBtnSubmitElem.removeEventListener(`click`, this._onSubmitButtonClick.bind(this));
   }
 
   /**
@@ -215,7 +297,7 @@ class Task {
   render() {
     this._element = null || document.createElement(`div`);
 
-    this._element.innerHTML = this.taskTemplate;
+    this._element.innerHTML = this.taskEditTemplate;
     this._element = this._element.firstElementChild;
     this.addEvents();
 
@@ -229,5 +311,5 @@ class Task {
 }
 
 export {
-  Task
+  TaskEdit
 };
