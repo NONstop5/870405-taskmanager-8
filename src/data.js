@@ -51,12 +51,6 @@ const DAYS_OF_WEEK = [
   `Su`
 ];
 
-// Список типов задач
-const TASK_TYPE_LIST = [
-  ``,
-  `card--edit`
-];
-
 /**
  * Возвращает дату плюс-минус 7 дней от текущей даты
  * @return {date}
@@ -84,6 +78,10 @@ const getTags = () => {
   return tagsList;
 };
 
+/**
+ * Возвращает объект с повторяющимеся днями недели
+ * @return {object}
+ */
 const getRepeatingDays = () => {
   return DAYS_OF_WEEK.reduce((resultObj, day) => {
     resultObj[day] = !!getRandomValueRange(0, 1);
@@ -95,7 +93,6 @@ export {
   FILTER_NAME_LIST,
   TASK_TITLE_LIST,
   TASK_COLOR_LIST,
-  TASK_TYPE_LIST,
   getDueDate,
   getTags,
   getRepeatingDays

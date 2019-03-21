@@ -1,14 +1,14 @@
 import createFilterItem from '../src/create-filter.js';
-import createTaskItem from './create-task.js';
 import {
   FILTER_NAME_LIST,
   TASK_TITLE_LIST,
   TASK_COLOR_LIST,
-  TASK_TYPE_LIST,
   getDueDate,
   getTags,
   getRepeatingDays
 } from '../src/data.js';
+import {Task} from '../src/task.js';
+import {TaskEdit} from '../src/task-edit.js';
 import {getRandomValueRange} from '../src/utils.js';
 
 const mainFilterElem = document.querySelector(`.main__filter`);
@@ -25,13 +25,24 @@ const generateFilters = (filterList) => {
 };
 
 /**
+ * Добавляем обработчик события для фильтров
+ */
+const addFiltersEvents = () => {
+  mainFilterElem.addEventListener(`click`, () => {
+    boardTasksElem.innerHTML = ``;
+    generateTasks(boardTasksElem, 7);
+  });
+};
+
+/**
  * Создание заданного числа карточеек
+ * @param {link} containerTasksElem
  * @param {int} taskCount
  */
-const generateTasks = (taskCount) => {
-  let tastsHtml = ``;
+const generateTasks = (containerTasksElem, taskCount) => {
+  containerTasksElem.innerHTML = ``;
   for (let i = 1; i <= taskCount; i++) {
-    tastsHtml += createTaskItem({
+    const taskObj = {
       title: TASK_TITLE_LIST[getRandomValueRange(0, TASK_TITLE_LIST.length - 1)],
       dueDate: getDueDate(),
       tags: getTags(),
@@ -43,27 +54,32 @@ const generateTasks = (taskCount) => {
       repeatingDays: getRepeatingDays(),
       isFavorite: !!getRandomValueRange(0, 1),
       isDone: !!getRandomValueRange(0, 1),
-      taskType: TASK_TYPE_LIST[1]
-    });
-  }
-  boardTasksElem.innerHTML = tastsHtml;
-};
+    };
 
-/**
- * Добавляем обработчик события для фильтров
- */
-const addFiltersEvents = () => {
-  mainFilterElem.addEventListener(`click`, () => {
-    boardTasksElem.innerHTML = ``;
-    generateTasks(getRandomValueRange(0, 7));
-  });
+    const taskComponent = new Task(taskObj);
+    const taskEditComponent = new TaskEdit(taskObj);
+
+    containerTasksElem.appendChild(taskComponent.render());
+
+    taskComponent.onEdit = () => {
+      taskEditComponent.render();
+      containerTasksElem.replaceChild(taskEditComponent.element, taskComponent.element);
+      taskComponent.unrender();
+    };
+
+    taskEditComponent.onSubmit = () => {
+      taskComponent.render();
+      containerTasksElem.replaceChild(taskComponent.element, taskEditComponent.element);
+      taskEditComponent.unrender();
+    };
+  }
 };
 
 // Отрисовываем фильтры
 generateFilters(FILTER_NAME_LIST);
 
-// Отрисовываем карточки
-generateTasks(7);
-
 // Добавляем обработчики событий фильтрам
 addFiltersEvents();
+
+// Отрисовываем карточек задач
+generateTasks(boardTasksElem, 7);
