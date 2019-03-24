@@ -1,12 +1,14 @@
-class Task {
+import {Component} from "./component";
+
+class Task extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._dueDate = data.dueDate;
     this._tags = data.tags;
     this._image = data.image;
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
-    this._element = null;
 
     this._state = {
       isFavorite: data.isFavorite,
@@ -14,32 +16,14 @@ class Task {
     };
 
     this._onEdit = null;
+    this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   /**
    * Генерация html-кода хэштэгов
    * @param {array} tags
-   * @return {string}
    */
-  _generateTaskHashtags(tags) {
-    const tagsHtml = tags.reduce((resultHtml, tagValue) => {
-      return resultHtml + `
-      <span class="card__hashtag-inner">
-        <button type="button" class="card__hashtag-name">
-          #${tagValue}
-        </button>
-      </span>
-    `;
-    }, ``);
-
-    return `
-    <div class="card__hashtag">
-      <div class="card__hashtag-list">
-        ${tagsHtml}
-      </div>
-    </div>
-  `;
-  }
+  _generateTaskHashtags() {}
 
   /**
    * Возвращает класс для смены класса кнопок задачи
@@ -102,10 +86,35 @@ class Task {
   }
 
   /**
+   * Генерация html-кода хэштэгов
+   * @param {array} tags
+   * @return {string}
+   */
+  _generateTaskHashtags(tags) {
+    const tagsHtml = tags.reduce((resultHtml, tagValue) => {
+      return resultHtml + `
+      <span class="card__hashtag-inner">
+        <button type="button" class="card__hashtag-name">
+          #${tagValue}
+        </button>
+      </span>
+    `;
+    }, ``);
+
+    return `
+    <div class="card__hashtag">
+      <div class="card__hashtag-list">
+        ${tagsHtml}
+      </div>
+    </div>
+  `;
+  }
+
+  /**
    * Отрисовка карточки задачи
    * @return {string}
    */
-  get taskTemplate() {
+  get template() {
     const taskControlBlock = `
     <div class="card__control">
       <button type="button" class="card__btn card__btn--edit">
@@ -187,10 +196,6 @@ class Task {
     }
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onEdit(fn) {
     this._onEdit = fn;
   }
@@ -200,31 +205,12 @@ class Task {
    */
   addEvents() {
     const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.addEventListener(`click`, this._onEditButtonClick.bind(this));
+    cardBtnEditElem.addEventListener(`click`, this._onEditButtonClick);
   }
 
   removeEvents() {
     const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.removeEventListener(`click`, this._onEditButtonClick.bind(this));
-  }
-
-  /**
-   * Отрисовка задачи в заданном элементе
-   * @return {link}
-   */
-  render() {
-    this._element = null || document.createElement(`div`);
-
-    this._element.innerHTML = this.taskTemplate;
-    this._element = this._element.firstElementChild;
-    this.addEvents();
-
-    return this._element;
-  }
-
-  unrender() {
-    this.removeEvents();
-    this._element = null;
+    cardBtnEditElem.removeEventListener(`click`, this._onEditButtonClick);
   }
 }
 

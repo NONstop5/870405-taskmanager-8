@@ -1,12 +1,14 @@
-class TaskEdit {
+import {Component} from "./component";
+
+class TaskEdit extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._dueDate = data.dueDate;
     this._tags = data.tags;
     this._image = data.image;
     this._color = data.color;
     this._repeatingDays = data.repeatingDays;
-    this._element = null;
 
     this._state = {
       isFavorite: data.isFavorite,
@@ -14,40 +16,14 @@ class TaskEdit {
     };
 
     this._onSubmit = null;
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
 
   /**
    * Генерация html-кода хэштэгов
    * @param {array} tags
-   * @return {string}
    */
-  _generateTaskHashtags(tags) {
-    const tagsHtml = tags.reduce((resultHtml, tagValue) => {
-      return resultHtml + `
-      <span class="card__hashtag-inner">
-        <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input" />
-        <button type="button" class="card__hashtag-name">
-          #${tagValue}
-        </button>
-        <button type="button" class="card__hashtag-delete">
-          delete
-        </button>
-      </span>
-    `;
-    }, ``);
-
-    return `
-    <div class="card__hashtag">
-      <div class="card__hashtag-list">
-        ${tagsHtml}
-      </div>
-
-      <label>
-        <input type="text" class="card__hashtag-input" name="hashtag-input" placeholder="Type new hashtag here" />
-      </label>
-    </div>
-  `;
-  }
+  _generateTaskHashtags() {}
 
   /**
    * Возвращает класс для смены класса кнопок задачи
@@ -65,7 +41,7 @@ class TaskEdit {
 
   /**
    * Возвращает является ли задача просроченной
-   * @param {*} dueDateStr
+   * @param {string} dueDateStr
    * @return {boolean}
    */
   _getIsDeadline(dueDateStr) {
@@ -107,6 +83,39 @@ class TaskEdit {
    */
   _getTaskBarType(isRepeat) {
     return isRepeat ? `card--repeat` : ``;
+  }
+
+  /**
+   * Генерация html-кода хэштэгов
+   * @param {array} tags
+   * @return {string}
+   */
+  _generateTaskHashtags(tags) {
+    const tagsHtml = tags.reduce((resultHtml, tagValue) => {
+      return resultHtml + `
+      <span class="card__hashtag-inner">
+        <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input" />
+        <button type="button" class="card__hashtag-name">
+          #${tagValue}
+        </button>
+        <button type="button" class="card__hashtag-delete">
+          delete
+        </button>
+      </span>
+    `;
+    }, ``);
+
+    return `
+    <div class="card__hashtag">
+      <div class="card__hashtag-list">
+        ${tagsHtml}
+      </div>
+
+      <label>
+        <input type="text" class="card__hashtag-input" name="hashtag-input" placeholder="Type new hashtag here" />
+      </label>
+    </div>
+  `;
   }
 
   /**
@@ -155,7 +164,7 @@ class TaskEdit {
    * Отрисовка карточки задачи
    * @return {string}
    */
-  get taskEditTemplate() {
+  get template() {
     const taskControlBlock = `
     <div class="card__control">
       <button type="button" class="card__btn card__btn--edit card__btn--disabled">
@@ -269,10 +278,6 @@ class TaskEdit {
     }
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onSubmit(fn) {
     this._onSubmit = fn;
   }
@@ -288,25 +293,6 @@ class TaskEdit {
   removeEvents() {
     const cardBtnSubmitElem = this._element.querySelector(`.card__save`);
     cardBtnSubmitElem.removeEventListener(`click`, this._onSubmitButtonClick.bind(this));
-  }
-
-  /**
-   * Отрисовка задачи в заданном элементе
-   * @return {link}
-   */
-  render() {
-    this._element = null || document.createElement(`div`);
-
-    this._element.innerHTML = this.taskEditTemplate;
-    this._element = this._element.firstElementChild;
-    this.addEvents();
-
-    return this._element;
-  }
-
-  unrender() {
-    this.removeEvents();
-    this._element = null;
   }
 }
 
