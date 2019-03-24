@@ -1,11 +1,88 @@
-import {TaskComponent} from "./taskComponent";
+import {Component} from "./component";
 
-class TaskEdit extends TaskComponent {
+class TaskEdit extends Component {
   constructor(data) {
-    super(data);
+    super();
+    this._title = data.title;
+    this._dueDate = data.dueDate;
+    this._tags = data.tags;
+    this._image = data.image;
+    this._color = data.color;
+    this._repeatingDays = data.repeatingDays;
+
+    this._state = {
+      isFavorite: data.isFavorite,
+      isDone: data.isDone,
+    };
 
     this._onSubmit = null;
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+  }
+
+  /**
+   * Генерация html-кода хэштэгов
+   * @param {array} tags
+   */
+  _generateTaskHashtags() {}
+
+  /**
+   * Возвращает класс для смены класса кнопок задачи
+   * @param {boolean} isDisabled
+   * @return {string}
+   */
+  _getTaskDisabledClass(isDisabled) {
+    const TaskDisabledClassList = {
+      true: ``,
+      false: ` card__btn--disabled`
+    };
+
+    return TaskDisabledClassList[isDisabled];
+  }
+
+  /**
+   * Возвращает является ли задача просроченной
+   * @param {string} dueDateStr
+   * @return {boolean}
+   */
+  _getIsDeadline(dueDateStr) {
+    const curDate = new Date();
+    const dueDateArr = dueDateStr.split(` `);
+    const dueDate = new Date(Date.parse(`${dueDateArr[1]} ${dueDateArr[0]}, 2019`));
+    return curDate > dueDate;
+  }
+
+  /**
+   * Возвращает цвет бара задачи в зависимости её просроченности
+   * @param {string} color
+   * @param {boolean} isDeadline
+   * @return {string}
+   */
+  _getTaskColor(color, isDeadline) {
+    return isDeadline ? `deadline` : color;
+  }
+
+  /**
+   * Возвращает повторяется задача или нет
+   * @param {object} repeatingDays
+   * @return {boolean}
+   */
+  _getIsRepeatTask(repeatingDays) {
+    for (let dayValue in repeatingDays) {
+      if (repeatingDays[dayValue]) {
+        return dayValue;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Возвращает класс повторяющейся задачи
+   * @param {boolean} isRepeat
+   * @return {string}
+   */
+  _getTaskBarType(isRepeat) {
+    return isRepeat ? `card--repeat` : ``;
   }
 
   /**
@@ -87,7 +164,7 @@ class TaskEdit extends TaskComponent {
    * Отрисовка карточки задачи
    * @return {string}
    */
-  get taskTemplate() {
+  get template() {
     const taskControlBlock = `
     <div class="card__control">
       <button type="button" class="card__btn card__btn--edit card__btn--disabled">
