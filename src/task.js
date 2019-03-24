@@ -1,19 +1,11 @@
-class Task {
-  constructor(data) {
-    this._title = data.title;
-    this._dueDate = data.dueDate;
-    this._tags = data.tags;
-    this._image = data.image;
-    this._color = data.color;
-    this._repeatingDays = data.repeatingDays;
-    this._element = null;
+import {TaskComponent} from "./taskComponent";
 
-    this._state = {
-      isFavorite: data.isFavorite,
-      isDone: data.isDone,
-    };
+class Task extends TaskComponent {
+  constructor(data) {
+    super(data);
 
     this._onEdit = null;
+    this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   /**
@@ -39,66 +31,6 @@ class Task {
       </div>
     </div>
   `;
-  }
-
-  /**
-   * Возвращает класс для смены класса кнопок задачи
-   * @param {boolean} isDisabled
-   * @return {string}
-   */
-  _getTaskDisabledClass(isDisabled) {
-    const TaskDisabledClassList = {
-      true: ``,
-      false: ` card__btn--disabled`
-    };
-
-    return TaskDisabledClassList[isDisabled];
-  }
-
-  /**
-   * Возвращает является ли задача просроченной
-   * @param {string} dueDateStr
-   * @return {boolean}
-   */
-  _getIsDeadline(dueDateStr) {
-    const curDate = new Date();
-    const dueDateArr = dueDateStr.split(` `);
-    const dueDate = new Date(Date.parse(`${dueDateArr[1]} ${dueDateArr[0]}, 2019`));
-    return curDate > dueDate;
-  }
-
-  /**
-   * Возвращает цвет бара задачи в зависимости её просроченности
-   * @param {string} color
-   * @param {boolean} isDeadline
-   * @return {string}
-   */
-  _getTaskColor(color, isDeadline) {
-    return isDeadline ? `deadline` : color;
-  }
-
-  /**
-   * Возвращает повторяется задача или нет
-   * @param {object} repeatingDays
-   * @return {boolean}
-   */
-  _getIsRepeatTask(repeatingDays) {
-    for (let dayValue in repeatingDays) {
-      if (repeatingDays[dayValue]) {
-        return dayValue;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Возвращает класс повторяющейся задачи
-   * @param {boolean} isRepeat
-   * @return {string}
-   */
-  _getTaskBarType(isRepeat) {
-    return isRepeat ? `card--repeat` : ``;
   }
 
   /**
@@ -187,10 +119,6 @@ class Task {
     }
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onEdit(fn) {
     this._onEdit = fn;
   }
@@ -200,31 +128,12 @@ class Task {
    */
   addEvents() {
     const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.addEventListener(`click`, this._onEditButtonClick.bind(this));
+    cardBtnEditElem.addEventListener(`click`, this._onEditButtonClick);
   }
 
   removeEvents() {
     const cardBtnEditElem = this._element.querySelector(`.card__btn--edit`);
-    cardBtnEditElem.removeEventListener(`click`, this._onEditButtonClick.bind(this));
-  }
-
-  /**
-   * Отрисовка задачи в заданном элементе
-   * @return {link}
-   */
-  render() {
-    this._element = null || document.createElement(`div`);
-
-    this._element.innerHTML = this.taskTemplate;
-    this._element = this._element.firstElementChild;
-    this.addEvents();
-
-    return this._element;
-  }
-
-  unrender() {
-    this.removeEvents();
-    this._element = null;
+    cardBtnEditElem.removeEventListener(`click`, this._onEditButtonClick);
   }
 }
 
